@@ -3,48 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>正义之槌：AI 审判庭 (Justice's Gavel)</title>
-    <!-- 核心引擎：Tailwind, React, Framer Motion, Lucide -->
+    <title>正义之槌：AI 审判庭</title>
+    <!-- 仅保留最核心的三个依赖 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&display=swap');
-        body { background-color: #0c0a09; color: #f5f5f4; margin: 0; overflow-x: hidden; font-family: system-ui, -apple-system, sans-serif; }
+        body { background-color: #0c0a09; color: #f5f5f4; margin: 0; font-family: system-ui, sans-serif; }
         .font-serif { font-family: 'Noto Serif SC', serif; }
-        .gavel-hit { filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.4)); }
+        /* 简单的 CSS 动画，替代复杂的动画库 */
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .gavel-anim { animation: gavelHit 0.5s ease-in-out; }
+        @keyframes gavelHit { 0% { transform: rotate(-45deg) translateY(-50px); } 50% { transform: rotate(0deg) translateY(20px); } 100% { transform: rotate(0deg) translateY(20px); } }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <!-- 初始加载提示，防止黑屏 -->
+    <div id="root">
+        <div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: #0c0a09; color: #d97706; font-family: serif; font-size: 24px;">
+            正在开启审判庭，请稍候...
+        </div>
+    </div>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
-        const { motion, AnimatePresence } = FramerMotion;
-
-        // 图标组件
-        const Icon = ({ name, className, size = 24 }) => {
-            useEffect(() => { if (window.lucide) lucide.createIcons(); }, []);
-            return <i data-lucide={name} className={className} style={{ width: size, height: size }}></i>;
-        };
+        const { useState, useMemo } = React;
 
         const CASES = [
-            { id: 1, title: "AI 招聘歧视案", summary: "某科技巨头使用 AI 筛选简历，一名极具天赋的残障应聘者因算法的“效率优化”被自动淘汰。原告控诉算法存在偏见与歧视。", options: [{ id: 'A', text: "要求公司提交评估报告，若无法证明无偏见则判处高额罚款。", score: 1 }, { id: 'B', text: "认定算法产生了歧视，直接下达禁令，禁止该算法在招聘中使用。", score: -1 }] },
-            { id: 2, title: "医疗诊断失误案", summary: "一款辅助医疗诊断的 AI 预测错误，导致患者错失最佳手术时机。医院辩称算法具有不可解释性，且符合技术标准。", options: [{ id: 'A', text: "仅审查算法准确性。如果系统在测试中达标，则判定医院无过错。", score: 1 }, { id: 'B', text: "裁定系统未尽到说明义务，判定医院需承担透明度缺失的法律责任。", score: -1 }] },
-            { id: 3, title: "面部识别监管案", summary: "某城市计划在公共场所部署实时面部识别系统以提升治安，引发隐私保护与公共安全的激烈博弈。", options: [{ id: 'A', text: "支持协作治理模式，允许在特定安全区域部署，但要求严格监督。", score: 1 }, { id: 'B', text: "认定其为“不可接受风险”，全面禁止在公共场所使用该技术。", score: -1 }] },
-            { id: 4, title: "自动驾驶事故案", summary: "一辆自动驾驶汽车在极端天气下发生碰撞。争议焦点在于算法的“韧性”与“人为介入”的边界。", options: [{ id: 'A', text: "认定在极端环境下系统已尽力，应由保险体系分担风险而非追究算法。", score: 1 }, { id: 'B', text: "认定系统缺乏必要的“人为介入”设计，判定制造商存在重大缺陷。", score: -1 }] },
-            { id: 5, title: "贷款审批偏见案", summary: "银行 AI 拒绝了一批特定社区居民的贷款申请。审计发现算法通过邮编等变量产生了间接歧视。", options: [{ id: 'A', text: "若算法在统计学上实现了预测一致性，则不认定为歧视。", score: 1 }, { id: 'B', text: "认定算法利用代理变量构成了实质性歧视，要求重构信用模型。", score: -1 }] }
+            { id: 1, title: "AI 招聘歧视案", summary: "某科技巨头使用 AI 筛选简历，一名残障应聘者被自动淘汰。原告控诉算法存在偏见。", options: [{ id: 'A', text: "要求公司提交评估报告，若无法证明无偏见则判处重罚。", score: 1 }, { id: 'B', text: "认定算法歧视，直接下达禁令，禁止该算法在招聘中使用。", score: -1 }] },
+            { id: 2, title: "医疗诊断失误案", summary: "一款辅助医疗诊断的 AI 预测错误，导致患者错失手术时机。医院辩称算法具有不可解释性。", options: [{ id: 'A', text: "仅审查算法准确性。如果测试达标，则判定医院无过错。", score: 1 }, { id: 'B', text: "认定系统透明度缺失，判定医院需承担法律责任。", score: -1 }] },
+            { id: 3, title: "面部识别监管案", summary: "某城市计划在公共场所部署实时面部识别系统以提升治安，引发隐私保护博弈。", options: [{ id: 'A', text: "支持协作治理模式，允许在特定安全区域部署，但要求严格监督。", score: 1 }, { id: 'B', text: "认定其为“不可接受风险”，全面禁止在公共场所使用该技术。", score: -1 }] },
+            { id: 4, title: "自动驾驶事故案", summary: "一辆自动驾驶汽车在极端天气下发生碰撞。争议焦点在于算法的“韧性”边界。", options: [{ id: 'A', text: "认定在极端环境下系统已尽力，应由保险体系分担风险。", score: 1 }, { id: 'B', text: "认定系统缺乏必要的“人为介入”设计，判定制造商存在缺陷。", score: -1 }] },
+            { id: 5, title: "贷款审批偏见案", summary: "银行 AI 拒绝了一批特定社区居民的贷款申请。审计发现算法通过邮编产生了间接歧视。", options: [{ id: 'A', text: "若算法在统计学上实现了预测一致性，则不认定为歧视。", score: 1 }, { id: 'B', text: "认定算法利用代理变量构成了实质性歧视，要求重构模型。", score: -1 }] }
         ];
 
         const ENDINGS = [
-            { id: 1, title: "科技至上主义的护航者", description: "您坚信效率与进步是文明的第一驱动力。在您的判决下，AI 产业获得了前所未有的自由空间。", icon: "rocket", color: "from-amber-500 to-orange-600" },
-            { id: 2, title: "硅谷的春天", description: "您在创新与责任之间找到了微妙的平衡。您支持技术发展，但坚持要求透明度与问责制。", icon: "globe", color: "from-emerald-500 to-teal-600" },
-            { id: 3, title: "平衡的艺术", description: "您是一位真正的中庸大师。您通过个案的精准裁量，为社会构建了一套稳健的 AI 治理体系。", icon: "scale", color: "from-blue-500 to-indigo-600" },
-            { id: 4, title: "法律的护栏", description: "您是人类尊严的最后防线。在您的审判席前，算法必须服从人权。社会正义得到了最坚实的守护。", icon: "lock", color: "from-purple-500 to-pink-600" },
-            { id: 5, title: "算法利维坦的拆解者", description: "您对失控的技术权力保持着绝对的警惕。您的名字将作为“人类主权”的捍卫者载入史册。", icon: "shield-alert", color: "from-red-600 to-rose-700" }
+            { title: "科技至上主义的护航者", desc: "您坚信效率与进步是文明的第一驱动力。AI 产业获得了前所未有的自由空间。", color: "from-amber-500 to-orange-600" },
+            { title: "硅谷的春天", desc: "您在创新与责任之间找到了微妙的平衡。您支持技术发展，但坚持要求透明度。", color: "from-emerald-500 to-teal-600" },
+            { title: "平衡的艺术", desc: "您是一位真正的中庸大师。您通过个案的精准裁量，构建了稳健的 AI 治理体系。", color: "from-blue-500 to-indigo-600" },
+            { title: "法律的护栏", desc: "您是人类尊严的最后防线。在您的审判席前，算法必须服从人权。", color: "from-purple-500 to-pink-600" },
+            { title: "算法利维坦的拆解者", desc: "您对失控的技术权力保持着绝对的警惕。您的名字将作为捍卫者载入史册。", color: "from-red-600 to-rose-700" }
         ];
 
         function App() {
@@ -56,13 +56,13 @@
                 setScore(prev => prev + s);
                 setGameState('gaveling');
                 setTimeout(() => {
-                    if (currentStep < CASES.length - 1) {
+                    if (currentStep < 4) {
                         setCurrentStep(prev => prev + 1);
                         setGameState('playing');
                     } else {
                         setGameState('ending');
                     }
-                }, 1800);
+                }, 1500);
             };
 
             const finalEnding = useMemo(() => {
@@ -74,67 +74,62 @@
             }, [score]);
 
             return (
-                <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#0c0a09] relative">
-                    <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/dark-wood.png')] opacity-20 pointer-events-none" />
-                    
-                    <AnimatePresence mode="wait">
-                        {gameState === 'start' && (
-                            <motion.div key="start" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-center z-10">
-                                <Icon name="gavel" className="text-amber-500 mx-auto mb-6" size={64} />
-                                <h1 className="text-6xl font-serif font-black mb-4 text-amber-500">正义之槌</h1>
-                                <p className="text-stone-400 text-xl mb-10 max-w-lg">作为首席大法官，您的每一次裁决都在重塑 AI 时代的法律边界。</p>
-                                <button onClick={() => setGameState('playing')} className="px-12 py-4 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-sm transition-transform hover:scale-105">开启审判</button>
-                            </motion.div>
-                        )}
+                <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#0c0a09] text-stone-100">
+                    {gameState === 'start' && (
+                        <div className="text-center fade-in">
+                            <h1 className="text-6xl font-serif font-black mb-6 text-amber-500">正义之槌</h1>
+                            <p className="text-stone-400 text-xl mb-10 max-w-md mx-auto">作为首席大法官，您的每一次裁决都在重塑 AI 时代的法律边界。</p>
+                            <button onClick={() => setGameState('playing')} className="px-12 py-4 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-sm transition-transform hover:scale-105">开启审判</button>
+                        </div>
+                    )}
 
-                        {gameState === 'playing' && (
-                            <motion.div key="playing" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} className="w-full max-w-4xl z-10">
-                                <div className="flex justify-between items-end mb-8">
-                                    <h2 className="text-4xl font-serif font-bold text-stone-100">{CASES[currentStep].title}</h2>
-                                    <span className="text-stone-500 font-mono">{currentStep + 1} / 5</span>
-                                </div>
-                                <div className="bg-stone-900/80 border-l-4 border-amber-600 p-8 mb-10">
-                                    <p className="text-xl text-stone-300 leading-relaxed italic">"{CASES[currentStep].summary}"</p>
-                                </div>
-                                <div className="grid md:grid-cols-2 gap-6">
-                                    {CASES[currentStep].options.map((opt, i) => (
-                                        <button key={i} onClick={() => handleDecision(opt.score)} className="p-8 text-left bg-stone-900 border border-stone-800 hover:border-amber-500 transition-colors rounded-lg group">
-                                            <span className="text-amber-500 font-mono mb-2 block">裁决方案 {i+1}</span>
-                                            <p className="text-stone-200">{opt.text}</p>
-                                        </button>
-                                    ))}
-                                </div>
-                            </motion.div>
-                        )}
+                    {gameState === 'playing' && (
+                        <div className="w-full max-w-4xl fade-in">
+                            <div className="flex justify-between items-end mb-8">
+                                <h2 className="text-4xl font-serif font-bold text-stone-100">{CASES[currentStep].title}</h2>
+                                <span className="text-stone-500 font-mono">{currentStep + 1} / 5</span>
+                            </div>
+                            <div className="bg-stone-900 border-l-4 border-amber-600 p-8 mb-10 shadow-xl">
+                                <p className="text-xl text-stone-300 leading-relaxed italic">"{CASES[currentStep].summary}"</p>
+                            </div>
+                            <div className="grid md:grid-cols-2 gap-6">
+                                {CASES[currentStep].options.map((opt, i) => (
+                                    <button key={i} onClick={() => handleDecision(opt.score)} className="p-8 text-left bg-stone-900 border border-stone-800 hover:border-amber-500 transition-all rounded-lg">
+                                        <span className="text-amber-500 font-mono mb-2 block">裁决方案 {i+1}</span>
+                                        <p className="text-stone-200">{opt.text}</p>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
-                        {gameState === 'gaveling' && (
-                            <motion.div key="gaveling" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm">
-                                <motion.div initial={{ rotate: -45, y: -100 }} animate={{ rotate: [ -45, 0 ], y: [ -100, 20 ] }} transition={{ duration: 0.3 }} className="text-amber-500 gavel-hit">
-                                    <Icon name="gavel" size={120} />
-                                </motion.div>
-                                <motion.h2 initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.3 }} className="text-6xl font-serif font-black text-amber-500 mt-10">宣判！</motion.h2>
-                            </motion.div>
-                        )}
+                    {gameState === 'gaveling' && (
+                        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90">
+                            <div className="text-amber-500 gavel-anim" style={{ fontSize: '100px' }}>⚖️</div>
+                            <h2 className="text-6xl font-serif font-black text-amber-500 mt-10">宣判！</h2>
+                        </div>
+                    )}
 
-                        {gameState === 'ending' && (
-                            <motion.div key="ending" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-2xl text-center z-10">
-                                <div className={`inline-block p-6 rounded-full bg-gradient-to-br ${finalEnding.color} mb-8 shadow-2xl`}>
-                                    <Icon name={finalEnding.icon} className="text-white" size={64} />
-                                </div>
-                                <h1 className="text-5xl font-serif font-black mb-6 text-stone-100">{finalEnding.title}</h1>
-                                <div className="bg-stone-900/90 p-8 rounded-xl border border-stone-800 mb-10">
-                                    <p className="text-xl text-stone-300 leading-relaxed">{finalEnding.description}</p>
-                                </div>
-                                <button onClick={() => window.location.reload()} className="px-10 py-4 bg-stone-100 hover:bg-white text-stone-900 font-bold rounded-full transition-transform hover:scale-105">重回审判席</button>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                    {gameState === 'ending' && (
+                        <div className="w-full max-w-2xl text-center fade-in">
+                            <div className={`inline-block p-8 rounded-full bg-gradient-to-br ${finalEnding.color} mb-8 shadow-2xl text-6xl`}>🏆</div>
+                            <h1 className="text-5xl font-serif font-black mb-6 text-stone-100">{finalEnding.title}</h1>
+                            <div className="bg-stone-900 p-8 rounded-xl border border-stone-800 mb-10">
+                                <p className="text-xl text-stone-300 leading-relaxed">{finalEnding.desc}</p>
+                            </div>
+                            <button onClick={() => window.location.reload()} className="px-10 py-4 bg-stone-100 hover:bg-white text-stone-900 font-bold rounded-full transition-transform hover:scale-105">重回审判席</button>
+                        </div>
+                    )}
                 </div>
             );
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        try {
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
+        } catch (e) {
+            document.getElementById('root').innerHTML = `<div style="color:red; padding:20px;">运行出错: ${e.message}</div>`;
+        }
     </script>
 </body>
 </html>
